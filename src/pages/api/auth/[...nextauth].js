@@ -26,9 +26,10 @@ export const authOptions = {
           console.log('📊 Using table:', TABLES.USERS);
           
           // Get user from DynamoDB
+          console.log('🔍 Looking up user with email:', credentials.email);
           const result = await dynamoDb.send(new GetCommand({
             TableName: TABLES.USERS,
-            Key: { email: credentials.email }
+            Key: { email: credentials.email } // Users table uses 'email' as primary key
           }));
 
           console.log('📋 DynamoDB query result:', { found: !!result.Item });
