@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { getSession, signOut } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
+import { getServerSession } from 'next-auth';
+import { authOptions } from './api/auth/[...nextauth]';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { 
@@ -240,9 +242,18 @@ export default function Dashboard({ initialLots, user }) {
 }
 
 export async function getServerSideProps(context) {
-  const session = await getSession(context);
+  console.log('🏠 Dashboard SSR - checking session...');
+  
+  const session = await getServerSession(context.req, context.res, authOptions);
+  
+  console.log('🔍 Dashboard session check:', { 
+    hasSession: !!session, 
+    userId: session?.user?.id,
+    userEmail: session?.user?.email 
+  });
 
   if (!session) {
+    console.log('❌ No session found, redirecting to login');
     return {
       redirect: {
         destination: '/login',

@@ -31,18 +31,33 @@ export default function Login() {
     setError('');
 
     try {
+      console.log('🔐 Attempting login for:', formData.email);
+      
       const result = await signIn('credentials', {
         email: formData.email,
         password: formData.password,
         redirect: false,
+        callbackUrl: '/dashboard'
       });
 
+      console.log('🔍 SignIn result:', result);
+
       if (result?.error) {
-        setError('Invalid email or password');
-      } else {
+        console.log('❌ Login error:', result.error);
+        if (result.error === 'CredentialsSignin') {
+          setError('Invalid email or password');
+        } else {
+          setError(`Login failed: ${result.error}`);
+        }
+      } else if (result?.ok) {
+        console.log('✅ Login successful, redirecting...');
         router.push('/dashboard');
+      } else {
+        console.log('⚠️ Unexpected result:', result);
+        setError('Login failed. Please try again.');
       }
     } catch (error) {
+      console.error('💥 Login exception:', error);
       setError('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);

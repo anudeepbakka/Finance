@@ -68,24 +68,34 @@ export const authOptions = {
   ],
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
     signIn: '/login',
     error: '/login',
   },
   debug: process.env.NODE_ENV === 'development',
+  secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
+      console.log('🎫 JWT callback:', { hasUser: !!user, hasToken: !!token, hasAccount: !!account });
       if (user) {
         token.id = user.id;
+        console.log('✅ JWT token updated with user ID:', user.id);
       }
       return token;
     },
     async session({ session, token }) {
-      if (token) {
+      console.log('👤 Session callback:', { hasSession: !!session, hasToken: !!token });
+      if (token && session.user) {
         session.user.id = token.id;
+        console.log('✅ Session updated with user ID:', token.id);
       }
       return session;
+    },
+    async signIn({ user, account, profile }) {
+      console.log('🚪 SignIn callback:', { hasUser: !!user, provider: account?.provider });
+      return true;
     },
   },
 };
