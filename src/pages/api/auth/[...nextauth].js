@@ -14,35 +14,53 @@ export const authOptions = {
         password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
+        console.log('🔐 NextAuth authorize called with:', { email: credentials?.email });
+        
         if (!credentials?.email || !credentials?.password) {
+          console.log('❌ Missing credentials');
           return null;
         }
 
         try {
+          console.log('🔍 Attempting DynamoDB connection...');
+          console.log('📊 Using table:', TABLES.USERS);
+          
           // Get user from DynamoDB
           const result = await dynamoDb.send(new GetCommand({
             TableName: TABLES.USERS,
             Key: { email: credentials.email }
           }));
 
+          console.log('📋 DynamoDB query result:', { found: !!result.Item });
+
           const user = result.Item;
           if (!user) {
+            console.log('❌ User not found in database');
             return null;
           }
 
           // Verify password
           const isValidPassword = await bcrypt.compare(credentials.password, user.password);
+          console.log('🔑 Password validation:', { valid: isValidPassword });
+          
           if (!isValidPassword) {
+            console.log('❌ Invalid password');
             return null;
           }
 
+          console.log('✅ Authentication successful for:', user.email);
           return {
             id: user.id,
             email: user.email,
             name: user.name,
           };
         } catch (error) {
-          console.error('Auth error:', error);
+          console.error('💥 Auth error details:', {
+            message: error.message,
+            code: error.code,
+            statusCode: error.statusCode,
+            stack: error.stack
+          });
           return null;
         }
       }
