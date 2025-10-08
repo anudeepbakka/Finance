@@ -242,18 +242,9 @@ export default function Dashboard({ initialLots, user }) {
 }
 
 export async function getServerSideProps(context) {
-  console.log('🏠 Dashboard SSR - checking session...');
-  
   const session = await getServerSession(context.req, context.res, authOptions);
-  
-  console.log('🔍 Dashboard session check:', { 
-    hasSession: !!session, 
-    userId: session?.user?.id,
-    userEmail: session?.user?.email 
-  });
 
   if (!session) {
-    console.log('❌ No session found, redirecting to login');
     return {
       redirect: {
         destination: '/login',
