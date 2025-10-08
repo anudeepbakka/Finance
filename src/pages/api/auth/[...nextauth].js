@@ -7,6 +7,7 @@ import { GetCommand } from '@aws-sdk/lib-dynamodb';
 export const authOptions = {
   providers: [
     CredentialsProvider({
+      id: 'credentials',
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
@@ -52,8 +53,9 @@ export const authOptions = {
   },
   pages: {
     signIn: '/login',
-    signUp: '/register',
+    error: '/login',
   },
+  debug: process.env.NODE_ENV === 'development',
   callbacks: {
     async jwt({ token, user }) {
       if (user) {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -13,6 +13,17 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+
+  useEffect(() => {
+    // Handle NextAuth error from URL
+    if (router.query.error) {
+      if (router.query.error === 'CredentialsSignin') {
+        setError('Invalid email or password');
+      } else {
+        setError('Authentication failed. Please try again.');
+      }
+    }
+  }, [router.query.error]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
