@@ -184,6 +184,7 @@ export default function LotDetails({ initialData, user }) {
 
     // Handle touch events for swipe gestures
     const handleTouchStart = (e) => {
+      e.preventDefault(); // Prevent page scroll
       setTouchEnd(null);
       setTouchStart(e.targetTouches[0].clientX);
       setIsSliding(true);
@@ -191,6 +192,7 @@ export default function LotDetails({ initialData, user }) {
     };
 
     const handleTouchMove = (e) => {
+      e.preventDefault(); // Prevent page scroll
       if (!touchStart) return;
       
       const currentTouch = e.targetTouches[0].clientX;
@@ -203,7 +205,8 @@ export default function LotDetails({ initialData, user }) {
       setSlidePosition(position);
     };
 
-    const handleTouchEnd = () => {
+    const handleTouchEnd = (e) => {
+      e.preventDefault(); // Prevent page scroll
       setIsSliding(false);
       
       if (!touchStart || !touchEnd) {
@@ -268,9 +271,17 @@ export default function LotDetails({ initialData, user }) {
       }
     };
 
+    // Prevent body scroll when modal is open
+    useEffect(() => {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = 'unset';
+      };
+    }, []);
+
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end z-50">
-        <div className="bg-white w-full max-w-md mx-auto rounded-t-xl p-6 max-h-[90vh] overflow-y-auto">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end z-50 overscroll-none">
+        <div className="bg-white w-full max-w-md mx-auto rounded-t-xl p-6 max-h-[90vh] overflow-y-auto overscroll-contain">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-semibold text-gray-900">Add Transaction</h3>
             <button
@@ -359,18 +370,19 @@ export default function LotDetails({ initialData, user }) {
             <div className="space-y-3 pt-6">
               <div className="relative">
                 <div 
-                  className={`relative rounded-full h-14 flex items-center overflow-hidden transition-colors duration-200 ${
+                  className={`relative rounded-full h-14 flex items-center overflow-hidden transition-colors duration-200 touch-none select-none ${
                     slidePosition < -0.3 ? 'bg-green-200' : 
                     slidePosition > 0.3 ? 'bg-red-200' : 
                     'bg-gray-200'
                   }`}
+                  style={{ touchAction: 'none' }}
                   onTouchStart={handleTouchStart}
                   onTouchMove={handleTouchMove}
                   onTouchEnd={handleTouchEnd}
-                  onMouseDown={(e) => handleTouchStart({ targetTouches: [{ clientX: e.clientX }] })}
-                  onMouseMove={(e) => isSliding && handleTouchMove({ targetTouches: [{ clientX: e.clientX }] })}
-                  onMouseUp={() => handleTouchEnd()}
-                  onMouseLeave={() => handleTouchEnd()}
+                  onMouseDown={(e) => handleTouchStart({ preventDefault: () => {}, targetTouches: [{ clientX: e.clientX }] })}
+                  onMouseMove={(e) => isSliding && handleTouchMove({ preventDefault: () => {}, targetTouches: [{ clientX: e.clientX }] })}
+                  onMouseUp={(e) => handleTouchEnd({ preventDefault: () => {} })}
+                  onMouseLeave={(e) => handleTouchEnd({ preventDefault: () => {} })}
                 >
                   {/* Sliding Circle */}
                   <div 
